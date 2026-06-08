@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Professional Resume Builder</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; }
+    .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
+    .header { text-align: center; margin-bottom: 30px; }
+    .header h1 { font-size: 28px; margin-bottom: 10px; }
+    .steps { display: flex; justify-content: space-around; margin-bottom: 30px; position: relative; }
+    .step { text-align: center; flex: 1; }
+    .step-number { width: 50px; height: 50px; background: #ddd; color: #999; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; font-weight: bold; font-size: 18px; }
+    .step.active .step-number { background: #0066cc; color: white; }
+    .step-label { font-size: 12px; color: #666; }
+    .step.active .step-label { color: #0066cc; font-weight: bold; }
+    .content { background: white; border-radius: 8px; padding: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .template-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px; }
+    .template-card { border: 2px solid #ddd; border-radius: 8px; padding: 15px; cursor: pointer; text-align: center; transition: all 0.2s; }
+    .template-card:hover { background: #f5f5f5; }
+    .template-card.active { border-color: #0066cc; background: #e6f2ff; }
+    .template-card h3 { font-size: 14px; margin-bottom: 5px; }
+    .template-card p { font-size: 11px; color: #666; }
+    .customize-section { margin-bottom: 25px; }
+    .customize-section h3 { font-size: 14px; margin-bottom: 12px; color: #333; }
+    .customize-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 15px; }
+    .customize-item { }
+    .customize-item label { display: block; font-size: 12px; color: #666; margin-bottom: 6px; font-weight: 500; }
+    input[type="color"], input[type="range"], select { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 6px; font-size: 12px; }
+    input[type="color"] { height: 36px; cursor: pointer; }
+    input[type="checkbox"] { margin-right: 8px; cursor: pointer; }
+    .upload-section { border: 2px dashed #0066cc; border-radius: 8px; padding: 30px; text-align: center; margin-bottom: 20px; }
+    .upload-section input[type="file"] { display: none; }
+    .upload-btn { padding: 10px 20px; background: #0066cc; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; }
+    .upload-btn:hover { background: #0052a3; }
+    .button-group { display: flex; gap: 10px; margin-top: 20px; }
+    .btn { padding: 10px 20px; border: 1px solid #ddd; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.2s; }
+    .btn-secondary { background: transparent; color: #333; }
+    .btn-secondary:hover { background: #f5f5f5; }
+    .btn-primary { background: #0066cc; color: white; border-color: #0066cc; flex: 1; }
+    .btn-primary:hover { background: #0052a3; }
+    .btn-primary:disabled { background: #ccc; cursor: not-allowed; }
+    .preview { margin-top: 20px; padding: 20px; background: #f9f9f9; border: 1px solid #ddd; border-radius: 6px; max-height: 400px; overflow-y: auto; font-family: Calibri, Arial; font-size: 11px; line-height: 1.5; }
+    .success-message { background: #d4edda; color: #155724; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
+    .error-message { background: #f8d7da; color: #721c24; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>📄 Resume Builder</h1>
+      <p style="color: #666; font-size: 14px;">Simple 3-step process to create your perfect resume</p>
+    </div>
+
+    <!-- STEPS INDICATOR -->
+    <div class="steps">
+      <div class="step active" data-step="1">
+        <div class="step-number">1</div>
+        <div class="step-label">Choose Template</div>
+      </div>
+      <div class="step" data-step="2">
+        <div class="step-number">2</div>
+        <div class="step-label">Customize</div>
+      </div>
+      <div class="step" data-step="3">
+        <div class="step-number">3</div>
+        <div class="step-label">Upload & Export</div>
+      </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content">
+      <!-- STEP 1: TEMPLATES -->
+      <div id="step1" class="step-content">
+        <h2 style="margin-bottom: 20px;">Step 1: Choose Your Resume Template</h2>
+        <div class="template-grid" id="templateGrid">
+          <div class="template-card active" data-template="professional">
+            <h3>Professional</h3>
+            <p>Classic & timeless</p>
+          </div>
+          <div class="template-card" data-template="modern">
+            <h3>Modern</h3>
+            <p>Contemporary design</p>
+          </div>
+          <div class="template-card" data-template="minimalist">
+            <h3>Minimalist</h3>
+            <p>Clean & simple</p>
+          </div>
+          <div class="template-card" data-template="software-engineer">
+            <h3>Software Engineer</h3>
+            <p>For IT professionals</p>
+          </div>
+          <div class="template-card" data-template="devops">
+            <h3>DevOps/Cloud</h3>
+            <p>Infrastructure focus</p>
+          </div>
+          <div class="template-card" data-template="data-scientist">
+            <h3>Data Scientist</h3>
+            <p>Analytics & ML</p>
+          </div>
+        </div>
+        <div class="button-group">
+          <button class="btn btn-primary" onclick="saveTemplate()">✓ Save & Continue</button>
+        </div>
+      </div>
+
+      <!-- STEP 2: CUSTOMIZE -->
+      <div id="step2" class="step-content hidden">
+        <h2 style="margin-bottom: 20px;">Step 2: Customize Your Design</h2>
+        
+        <div class="customize-section">
+          <h3>🎨 Colors</h3>
+          <div class="customize-grid">
+            <div class="customize-item">
+              <label>Primary Text Color</label>
+              <input type="color" id="colorPrimary" value="#1a1a1a">
+            </div>
+            <div class="customize-item">
+              <label>Accent Color (Headers)</label>
+              <input type="color" id="colorAccent" value="#0066cc">
+            </div>
+            <div class="customize-item">
+              <label>Secondary Text Color</label>
+              <input type="color" id="colorSecondary" value="#666666">
+            </div>
+          </div>
+        </div>
+
+        <div class="customize-section">
+          <h3>🔤 Fonts & Sizes</h3>
+          <div class="customize-grid">
+            <div class="customize-item">
+              <label>Font Family</label>
+              <select id="fontFamily">
+                <option value="Calibri">Calibri</option>
+                <option value="Arial">Arial</option>
+                <option value="Georgia">Georgia</option>
+                <option value="Times New Roman">Times New Roman</option>
+                <option value="Verdana">Verdana</option>
+              </select>
+            </div>
+            <div class="customize-item">
+              <label>Header Size: <span id="headerSizeVal">14</span>px</label>
+              <input type="range" id="headerSize" min="12" max="18" value="14" onchange="document.getElementById('headerSizeVal').textContent = this.value">
+            </div>
+            <div class="customize-item">
+              <label>Line Height: <span id="lineHeightVal">1.5</span></label>
+              <input type="range" id="lineHeight" min="1" max="2" step="0.1" value="1.5" onchange="document.getElementById('lineHeightVal').textContent = this.value">
+            </div>
+          </div>
+        </div>
+
+        <div class="customize-section">
+          <h3>✨ Layout Options</h3>
+          <div style="display: flex; gap: 20px;">
+            <label><input type="checkbox" id="showDividers" checked> Show Section Dividers</label>
+            <label><input type="checkbox" id="headerBold" checked> Bold Headers</label>
+          </div>
+        </div>
+
+        <div class="button-group">
+          <button class="btn btn-secondary" onclick="goToStep(1)">← Back</button>
+          <button class="btn btn-primary" onclick="saveCustomization()">✓ Save & Continue</button>
+        </div>
+      </div>
+
+      <!-- STEP 3: UPLOAD & EXPORT -->
+      <div id="step3" class="step-content hidden">
+        <h2 style="margin-bottom: 20px;">Step 3: Upload Resume & Export</h2>
+        
+        <div class="upload-section">
+          <p style="margin-bottom: 10px; font-size: 14px; font-weight: 500;">Upload Your Resume (PDF, Word, JPG, or Text)</p>
+          <p style="margin-bottom: 15px; font-size: 12px; color: #666;">Your resume will be automatically parsed and formatted according to your selections</p>
+          <input type="file" id="resumeFile" accept=".pdf,.docx,.doc,.jpg,.jpeg,.png,.txt">
+          <button class="upload-btn" onclick="document.getElementById('resumeFile').click()">📤 Choose File</button>
+        </div>
+
+        <div id="successMessage" class="success-message hidden">
+          ✓ Resume imported and formatted successfully!
+        </div>
+
+        <div id="errorMessage" class="error-message hidden"></div>
+
+        <div id="previewSection" class="hidden">
+          <h3 style="margin-bottom: 15px;">Resume Preview:</h3>
+          <div class="preview" id="preview"></div>
+        </div>
+
+        <div id="exportSection" class="hidden button-group">
+          <button class="btn btn-secondary" onclick="goToStep(2)">← Back</button>
+          <button class="btn btn-primary" onclick="exportResume('pdf')">📥 Download as PDF</button>
+          <button class="btn btn-primary" onclick="exportResume('docx')">📥 Download as DOCX</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.js"></script>
+
+  <script>
+    let currentTemplate = 'professional';
+    let resumeData = {};
+
+    // Template selection
+    document.querySelectorAll('.template-card').forEach(card => {
+      card.addEventListener('click', function() {
+        document.querySelectorAll('.template-card').forEach(c => c.classList.remove('active'));
+        this.classList.add('active');
+        currentTemplate = this.dataset.template;
+      });
+    });
+
+    function saveTemplate() {
+      updateStepUI(2);
+      goToStep(2);
+    }
+
+    function saveCustomization() {
+      updateStepUI(3);
+      goToStep(3);
+    }
+
+    function updateStepUI(step) {
+      document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+      document.querySelector(`.step[data-step="${step}"]`).classList.add('active');
+    }
+
+    function goToStep(step) {
+      document.querySelectorAll('.step-content').forEach(el => el.classList.add('hidden'));
+      document.getElementById(`step${step}`).classList.remove('hidden');
+      updateStepUI(step);
+      window.scrollTo(0, 0);
+    }
+
+    // File upload and parsing
+    document.getElementById('resumeFile').addEventListener('change', handleFileUpload);
+
+    async function handleFileUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      document.getElementById('successMessage').classList.add('hidden');
+      document.getElementById('errorMessage').classList.add('hidden');
+      document.getElementById('previewSection').classList.add('hidden');
+      document.getElementById('exportSection').classList.add('hidden');
+
+      try {
+        let text = '';
+        
+        if (file.type === 'application/pdf') {
+          alert('PDF: Please save as text/copy-paste content, then upload as .txt');
+          return;
+        } else if (file.name.endsWith('.txt') || file.type.startsWith('text/')) {
+          text = await file.text();
+        } else if (file.type.startsWith('image/')) {
+          alert('Image files: Please convert to text format first');
+          return;
+        } else if (file.name.endsWith('.docx')) {
+          alert('Word files: Please export as PDF/text first');
+          return;
+        } else {
+          text = await file.text();
+        }
+
+        parseResume(text);
+        displayPreview();
+        document.getElementById('successMessage').classList.remove('hidden');
+        document.getElementById('previewSection').classList.remove('hidden');
+        document.getElementById('exportSection').classList.remove('hidden');
+      } catch (error) {
+        document.getElementById('errorMessage').classList.remove('hidden');
+        document.getElementById('errorMessage').textContent = '❌ Error: Please use text-based format (.txt)';
+      }
+    }
+
+    function parseResume(text) {
+      const nameMatch = text.match(/^([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)/m);
+      resumeData.name = nameMatch ? nameMatch[1].trim() : 'Your Name';
+
+      const phoneMatch = text.match(/\(?(\d{3})\)?[-.\s]?(\d{3})[-.\s]?(\d{4})/);
+      resumeData.phone = phoneMatch ? `(${phoneMatch[1]}) ${phoneMatch[2]}-${phoneMatch[3]}` : '';
+
+      const emailMatch = text.match(/([a-zA-Z0-9._%-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/);
+      resumeData.email = emailMatch ? emailMatch[1] : '';
+
+      const locationMatch = text.match(/\b([A-Z][a-z]+),?\s+([A-Z]{2})\b/);
+      resumeData.location = locationMatch ? `${locationMatch[1]}, ${locationMatch[2]}` : '';
+
+      const summaryMatch = text.match(/(?:professional\s+summary|summary)[:\s]*\n([\s\S]*?)(?=\n\n|education|skills|experience)/i);
+      resumeData.summary = summaryMatch ? summaryMatch[1].trim() : '';
+
+      const skillsMatch = text.match(/(?:skills?)[:\s]*\n([\s\S]*?)(?=\n\n|education|experience)/i);
+      resumeData.skills = skillsMatch ? skillsMatch[1].trim() : '';
+
+      const expMatch = text.match(/(?:experience)[:\s]*\n([\s\S]*?)(?=education|$)/i);
+      resumeData.experience = expMatch ? expMatch[1].trim() : '';
+
+      const eduMatch = text.match(/(?:education)[:\s]*\n([\s\S]*?)(?=\n\n|skills|experience|$)/i);
+      resumeData.education = eduMatch ? eduMatch[1].trim() : '';
+    }
+
+    function displayPreview() {
+      const colorPrimary = document.getElementById('colorPrimary').value;
+      const colorAccent = document.getElementById('colorAccent').value;
+      const colorSecondary = document.getElementById('colorSecondary').value;
+      const fontFamily = document.getElementById('fontFamily').value;
+      const headerSize = document.getElementById('headerSize').value;
+      const lineHeight = document.getElementById('lineHeight').value;
+      const showDividers = document.getElementById('showDividers').checked;
+
+      let html = `<div style="font-family: ${fontFamily}; color: ${colorPrimary}; line-height: ${lineHeight};">`;
+      html += `<div style="margin-bottom: 8px;"><strong style="font-size: ${headerSize}px; color: ${colorAccent};">${resumeData.name}</strong></div>`;
+      html += `<div style="margin-bottom: 8px; color: ${colorSecondary}; font-size: 10px;">${resumeData.location} • ${resumeData.email} • ${resumeData.phone}</div>`;
+      
+      if (showDividers) html += `<hr style="border: none; border-top: 1px solid ${colorAccent}; margin: 8px 0;" />`;
+
+      if (resumeData.summary) {
+        html += `<div style="margin-bottom: 4px;"><strong style="font-size: ${headerSize}px; color: ${colorAccent};">Professional Summary:</strong></div>`;
+        resumeData.summary.split('\n').forEach(line => {
+          if (line.trim()) html += `<div style="margin-left: 12px; margin-bottom: 2px;">• ${line.trim()}</div>`;
+        });
+        if (showDividers) html += `<hr style="border: none; border-top: 1px solid ${colorAccent}; margin: 8px 0;" />`;
+      }
+
+      if (resumeData.experience) {
+        html += `<div style="margin-bottom: 4px;"><strong style="font-size: ${headerSize}px; color: ${colorAccent};">Experience:</strong></div>`;
+        html += `<div style="margin-left: 12px;">${resumeData.experience.replace(/\n/g, '<br>')}</div>`;
+        if (showDividers) html += `<hr style="border: none; border-top: 1px solid ${colorAccent}; margin: 8px 0;" />`;
+      }
+
+      if (resumeData.education) {
+        html += `<div style="margin-bottom: 4px;"><strong style="font-size: ${headerSize}px; color: ${colorAccent};">Education:</strong></div>`;
+        html += `<div style="margin-left: 12px;">${resumeData.education.replace(/\n/g, '<br>')}</div>`;
+        if (showDividers) html += `<hr style="border: none; border-top: 1px solid ${colorAccent}; margin: 8px 0;" />`;
+      }
+
+      if (resumeData.skills) {
+        html += `<div style="margin-bottom: 4px;"><strong style="font-size: ${headerSize}px; color: ${colorAccent};">Skills:</strong></div>`;
+        html += `<div style="margin-left: 12px;">${resumeData.skills.replace(/\n/g, '<br>')}</div>`;
+      }
+
+      html += `</div>`;
+      document.getElementById('preview').innerHTML = html;
+    }
+
+    function exportResume(format) {
+      if (format === 'pdf') {
+        const element = document.getElementById('preview');
+        const opt = { margin: 10, filename: 'resume.pdf', html2canvas: { scale: 2 }, jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' } };
+        html2pdf().set(opt).from(element).save();
+      } else if (format === 'docx') {
+        const { Document, Packer, Paragraph } = docx;
+        const doc = new Document({
+          sections: [{
+            children: [
+              new Paragraph({ text: resumeData.name, bold: true, size: 28 }),
+              new Paragraph({ text: `${resumeData.location} • ${resumeData.email} • ${resumeData.phone}`, size: 20 }),
+              new Paragraph({ text: '', size: 20 }),
+              ...resumeData.summary.split('\n').filter(l => l.trim()).map(l => new Paragraph({ text: '• ' + l.trim(), size: 22 })),
+              new Paragraph({ text: '', size: 20 }),
+              new Paragraph({ text: 'Experience', bold: true, size: 24 }),
+              new Paragraph({ text: resumeData.experience, size: 22 }),
+              new Paragraph({ text: '', size: 20 }),
+              new Paragraph({ text: 'Education', bold: true, size: 24 }),
+              new Paragraph({ text: resumeData.education, size: 22 }),
+            ]
+          }]
+        });
+        Packer.toBlob(doc).then(blob => {
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'resume.docx';
+          a.click();
+        });
+      }
+    }
+  </script>
+</body>
+</html>
