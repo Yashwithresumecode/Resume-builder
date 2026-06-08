@@ -83,6 +83,16 @@
               <h2>Resume Information</h2>
               <form id="resumeForm">
                 <fieldset>
+                  <legend>Import Resume</legend>
+                  <div style="margin-bottom: 8px;">
+                    <label style="display: block; font-size: 12px; color: #666; margin-bottom: 6px;">Upload or Paste Your Resume</label>
+                    <textarea id="resumeImport" placeholder="Paste your resume text here or upload a file..." style="width: 100%; height: 80px; margin-bottom: 8px;"></textarea>
+                    <input type="file" id="resumeFile" accept=".pdf,.txt,.doc,.docx" style="width: 100%; margin-bottom: 8px;">
+                    <button type="button" id="parseResume" style="width: 100%; padding: 8px; background: #0066cc; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 12px;">Auto-Fill from Resume</button>
+                  </div>
+                </fieldset>
+
+                <fieldset>
                   <legend>Personal</legend>
                   <input type="text" id="fullName" placeholder="Full Name" value="Stephanie Champion">
                   <input type="text" id="phone" placeholder="Phone" value="(520) 349-4645">
@@ -146,6 +156,22 @@
             <div class="template-card" data-template="creative">
               <h3>Creative</h3>
               <p>Bold design for creative professionals.</p>
+            </div>
+            <div class="template-card" data-template="software-engineer">
+              <h3>Software Engineer</h3>
+              <p>Optimized for developers & engineers.</p>
+            </div>
+            <div class="template-card" data-template="devops">
+              <h3>DevOps/Cloud</h3>
+              <p>Focused on infrastructure & deployment.</p>
+            </div>
+            <div class="template-card" data-template="data-scientist">
+              <h3>Data Scientist</h3>
+              <p>Emphasize analytics & ML skills.</p>
+            </div>
+            <div class="template-card" data-template="fullstack">
+              <h3>Full Stack</h3>
+              <p>Frontend, backend & database expertise.</p>
             </div>
           </div>
         </div>
@@ -276,10 +302,81 @@ Certified in BLS, ACLS, and PALS with prior experience as Nurse Extern, Phleboto
         professional: { fontSize: '11px', headerSize: '14px', lineHeight: '1.5', marginSection: '8px' },
         modern: { fontSize: '11px', headerSize: '15px', lineHeight: '1.6', marginSection: '10px' },
         minimalist: { fontSize: '10px', headerSize: '13px', lineHeight: '1.4', marginSection: '6px' },
-        creative: { fontSize: '12px', headerSize: '16px', lineHeight: '1.7', marginSection: '12px' }
+        creative: { fontSize: '12px', headerSize: '16px', lineHeight: '1.7', marginSection: '12px' },
+        'software-engineer': { fontSize: '11px', headerSize: '14px', lineHeight: '1.5', marginSection: '8px' },
+        'devops': { fontSize: '11px', headerSize: '14px', lineHeight: '1.5', marginSection: '8px' },
+        'data-scientist': { fontSize: '11px', headerSize: '14px', lineHeight: '1.5', marginSection: '8px' },
+        'fullstack': { fontSize: '11px', headerSize: '14px', lineHeight: '1.5', marginSection: '8px' }
       };
       return styles[currentTemplate];
     }
+
+    document.getElementById('parseResume').addEventListener('click', () => {
+      const text = document.getElementById('resumeImport').value;
+      if (!text.trim()) {
+        alert('Please paste resume text or upload a file');
+        return;
+      }
+
+      // Extract name (usually first line or after common keywords)
+      const nameMatch = text.match(/^([A-Z][a-z]+ [A-Z][a-z]+)/m);
+      if (nameMatch) document.getElementById('fullName').value = nameMatch[1];
+
+      // Extract phone
+      const phoneMatch = text.match(/(\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4})/);
+      if (phoneMatch) document.getElementById('phone').value = phoneMatch[1];
+
+      // Extract email
+      const emailMatch = text.match(/([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/);
+      if (emailMatch) document.getElementById('email').value = emailMatch[1];
+
+      // Extract location (look for city, state pattern)
+      const locationMatch = text.match(/([A-Z][a-z]+,?\s*[A-Z]{2})/);
+      if (locationMatch) document.getElementById('location').value = locationMatch[1];
+
+      // Extract summary (text between name/contact and education)
+      const summaryMatch = text.match(/summary|overview|about|professional.*?\n([\s\S]*?)(?=education|experience|skills)/i);
+      if (summaryMatch) {
+        const summaryText = summaryMatch[1].replace(/^[-•]\s*/gm, '').trim();
+        document.getElementById('summary').value = summaryText.split('\n').filter(l => l.trim()).join('\n');
+      }
+
+      // Extract skills
+      const skillsMatch = text.match(/skills?[:\s]*\n([\s\S]*?)(?=\n\n|education|experience|$)/i);
+      if (skillsMatch) {
+        const skillsText = skillsMatch[1].replace(/^[-•]\s*/gm, '').trim();
+        document.getElementById('skills').value = skillsText.split('\n').filter(l => l.trim()).join(', ');
+      }
+
+      // Extract education
+      const eduMatch = text.match(/education[:\s]*\n([\s\S]*?)(?=\n[A-Z]|experience|$)/i);
+      if (eduMatch) {
+        const eduText = eduMatch[1].trim();
+        const lines = eduText.split('\n').filter(l => l.trim());
+        if (lines[0]) document.getElementById('degree').value = lines[0];
+        if (lines[1]) document.getElementById('school').value = lines[1];
+        if (lines[2]) document.getElementById('gradDate').value = lines[2];
+      }
+
+      alert('Resume imported! Please review and adjust the information as needed.');
+      updatePreview();
+    });
+
+    document.getElementById('resumeFile').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        // Simple text extraction (works for .txt files)
+        if (file.name.endsWith('.txt')) {
+          document.getElementById('resumeImport').value = evt.target.result;
+        } else {
+          alert('For PDF files, please copy-paste the text content instead.');
+        }
+      };
+      reader.readAsText(file);
+    });
 
     function updatePreview() {
       const fullName = document.getElementById('fullName').value;
@@ -477,7 +574,7 @@ Certified in BLS, ACLS, and PALS with prior experience as Nurse Extern, Phleboto
       const input = document.createElement('input');
       input.type = 'file';
       input.accept = '.json';
-      input.onchange = (e) => { 
+      input.onchange = (e) => {
         const file = e.target.files[0];
         const reader = new FileReader();
         reader.onload = (evt) => {
