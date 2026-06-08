@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Professional Resume Builder</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; background: #f5f5f5; }
+    .container { display: flex; flex-direction: column; height: 100vh; background: white; }
+    .header { background: #f9f9f9; border-bottom: 1px solid #e0e0e0; padding: 16px 20px; }
+    .header-content { display: flex; align-items: center; justify-content: space-between; max-width: 1400px; margin: 0 auto; width: 100%; }
+    .header h1 { font-size: 20px; font-weight: 500; }
+    .tabs { display: flex; gap: 8px; }
+    .tab-btn { padding: 8px 16px; border: 1px solid #ddd; background: white; cursor: pointer; border-radius: 6px; font-size: 13px; font-weight: 500; transition: all 0.2s; }
+    .tab-btn:hover { background: #f5f5f5; }
+    .tab-btn.active { border-color: #333; background: white; }
+    .content { flex: 1; overflow: auto; padding: 20px; }
+    .content-max { max-width: 1400px; margin: 0 auto; width: 100%; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .builder-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; min-height: 100%; }
+    .form-section { overflow-y: auto; padding-right: 20px; }
+    .form-section h2 { font-size: 16px; margin: 0 0 16px; color: #333; }
+    .form-section p { font-size: 12px; color: #666; margin: 0 0 16px; }
+    fieldset { border: none; padding: 0; margin: 0 0 16px; }
+    legend { font-size: 12px; font-weight: 500; color: #666; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+    input[type="text"], input[type="email"], textarea, select, input[type="color"], input[type="range"] { 
+      width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 6px; font-family: inherit; font-size: 13px; margin-bottom: 8px;
+    }
+    textarea { resize: none; font-family: inherit; }
+    input[type="color"] { height: 36px; cursor: pointer; }
+    input[type="range"] { height: 4px; }
+    button { padding: 8px 16px; border: 1px solid #ddd; background: white; cursor: pointer; border-radius: 6px; font-size: 12px; font-weight: 500; transition: all 0.2s; }
+    button:hover { background: #f5f5f5; }
+    .preview { overflow-y: auto; padding: 16px; background: white; border: 1px solid #ddd; border-radius: 8px; position: sticky; top: 20px; height: fit-content; }
+    .template-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; }
+    .template-card { border: 2px solid #ddd; border-radius: 8px; padding: 16px; cursor: pointer; background: #f9f9f9; transition: all 0.2s; }
+    .template-card:hover { background: white; }
+    .template-card.active { border-color: #333; background: white; }
+    .template-card h3 { margin: 0 0 8px; font-size: 14px; }
+    .template-card p { margin: 0; font-size: 12px; color: #666; line-height: 1.6; }
+    .customize-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+    .customize-card { border: 1px solid #ddd; border-radius: 8px; padding: 16px; }
+    .customize-card h3 { margin: 0 0 12px; font-size: 14px; }
+    .customize-card > div { margin-bottom: 12px; }
+    .customize-card label { display: block; font-size: 12px; color: #666; margin-bottom: 6px; }
+    .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .dashboard-header h2 { font-size: 16px; margin: 0; }
+    .resume-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+    .resume-card { border: 1px solid #ddd; border-radius: 8px; padding: 12px; background: #f9f9f9; }
+    .resume-card h3 { margin: 0 0 8px; font-size: 13px; }
+    .resume-card .actions { display: flex; gap: 6px; margin-top: 8px; }
+    .resume-card button { flex: 1; padding: 6px; font-size: 11px; }
+    .exp-field { margin-bottom: 12px; padding: 12px; border: 1px solid #ddd; border-radius: 6px; background: #f9f9f9; }
+    .btn-add { width: 100%; margin-top: 8px; border-style: dashed; }
+    .action-buttons { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
+    .action-buttons button { flex: 1; min-width: 100px; }
+    #preview { font-family: Calibri, Arial, sans-serif; font-size: 11px; line-height: 1.5; color: #333; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="header-content">
+        <h1>Resume Builder</h1>
+        <div class="tabs">
+          <button class="tab-btn active" data-tab="builder">Build</button>
+          <button class="tab-btn" data-tab="templates">Templates</button>
+          <button class="tab-btn" data-tab="customize">Customize</button>
+          <button class="tab-btn" data-tab="dashboard">Team</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="content-max">
+        
+        <!-- BUILDER TAB -->
+        <div id="builder" class="tab-content active">
+          <div class="builder-grid">
+            <div class="form-section">
+              <h2>Resume Information</h2>
+              <form id="resumeForm">
+                <fieldset>
+                  <legend>📄 Upload Resume</legend>
+                  <div style="margin-bottom: 8px;">
+                    <label style="display: block; font-size: 12px; color: #666; margin-bottom: 6px;">Upload Resume File (PDF, Word, or Text)</label>
+                    <input type="file" id="resumeFile" accept=".pdf,.txt,.doc,.docx" style="width: 100%; padding: 10px; border: 2px dashed #0066cc; border-radius: 6px; cursor: pointer;">
+                    <p style="font-size: 11px; color: #666; margin: 8px 0;">✨ Upload and it auto-fills & formats instantly!</p>
+                  </div>
+                </fieldset>
+
+                <fieldset>
+                  <legend>Personal</legend>
+                  <input type="text" id="fullName" placeholder="Full Name">
+                  <input type="text" id="phone" placeholder="Phone">
+                  <input type="email" id="email" placeholder="Email">
+                  <input type="text" id="location" placeholder="City, State">
+                </fieldset>
+
+                <fieldset>
+                  <legend>Professional Summary</legend>
+                  <textarea id="summary" placeholder="Enter bullet points (one per line)" rows="6"></textarea>
+                </fieldset>
+
+                <fieldset>
+                  <legend>Education</legend>
+                  <input type="text" id="degree" placeholder="Degree" value="Bachelor of Science in Nursing">
+                  <input type="text" id="school" placeholder="School" value="Arizona College of Nursing">
+                  <input type="text" id="gradDate" placeholder="Graduation Date" value="April 2023">
+                </fieldset>
+
+                <fieldset>
+                  <legend>Skills</legend>
+                  <textarea id="skills" placeholder="Comma-separated or one per line" rows="5"></textarea>
+                </fieldset>
+
+                <fieldset>
+                  <legend>Experience</legend>
+                  <div id="experienceContainer"></div>
+                  <button type="button" id="addExp" class="btn-add">+ Add Position</button>
+                </fieldset>
+
+                <div class="action-buttons">
+                  <button type="button" id="exportPDF">PDF</button>
+                  <button type="button" id="exportDOCX">DOCX</button>
+                  <button type="button" id="saveResume">Save</button>
+                </div>
+              </form>
+            </div>
+
+            <div class="preview">
+              <div id="preview"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TEMPLATES TAB -->
+        <div id="templates" class="tab-content">
+          <h2 style="font-size: 16px; margin: 0 0 16px;">Choose & Save Template</h2>
+          <p style="font-size: 12px; color: #666; margin-bottom: 16px;">Select a template below, then click "Select & Save Template" to apply it.</p>
+          <div class="template-grid">
+            <div class="template-card active" data-template="professional">
+              <h3>Professional</h3>
+              <p>Classic, timeless design. Best for corporate roles.</p>
+            </div>
+            <div class="template-card" data-template="modern">
+              <h3>Modern</h3>
+              <p>Contemporary layout with accent colors.</p>
+            </div>
+            <div class="template-card" data-template="minimalist">
+              <h3>Minimalist</h3>
+              <p>Clean, distraction-free design.</p>
+            </div>
+            <div class="template-card" data-template="creative">
+              <h3>Creative</h3>
+              <p>Bold design for creative professionals.</p>
+            </div>
+            <div class="template-card" data-template="software-engineer">
+              <h3>Software Engineer</h3>
+              <p>Optimized for developers & engineers.</p>
+            </div>
+            <div class="template-card" data-template="devops">
+              <h3>DevOps/Cloud</h3>
+              <p>Focused on infrastructure & deployment.</p>
+            </div>
+            <div class="template-card" data-template="data-scientist">
+              <h3>Data Scientist</h3>
+              <p>Emphasize analytics & ML skills.</p>
+            </div>
+            <div class="template-card" data-template="fullstack">
+              <h3>Full Stack</h3>
+              <p>Frontend, backend & database expertise.</p>
+            </div>
+          </div>
+          <button id="saveTemplate" style="width: 100%; margin-top: 16px; padding: 12px; background: #0066cc; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500;">✓ Select & Save Template</button>
+        </div>
+
+        <!-- CUSTOMIZE TAB -->
+        <div id="customize" class="tab-content">
+          <h2 style="font-size: 16px; margin: 0 0 16px;">📝 Customize Design (Word-like Controls)</h2>
+          <div class="customize-grid">
+            <div class="customize-card">
+              <h3>🎨 Colors</h3>
+              <div>
+                <label>Primary Text Color</label>
+                <input type="color" id="colorPrimary" value="#1a1a1a">
+              </div>
+              <div>
+                <label>Accent Color (Headers)</label>
+                <input type="color" id="colorAccent" value="#0066cc">
+              </div>
+              <div>
+                <label>Background Color</label>
+                <input type="color" id="colorBackground" value="#ffffff">
+              </div>
+              <div>
+                <label>Secondary Text Color</label>
+                <input type="color" id="colorSecondary" value="#666666">
+              </div>
+            </div>
+
+            <div class="customize-card">
+              <h3>🔤 Font Family</h3>
+              <div>
+                <label>Body Font</label>
+                <select id="fontFamily">
+                  <option value="Calibri">Calibri</option>
+                  <option value="Arial">Arial</option>
+                  <option value="Georgia">Georgia</option>
+                  <option value="Times New Roman">Times New Roman</option>
+                  <option value="Verdana">Verdana</option>
+                  <option value="Trebuchet MS">Trebuchet MS</option>
+                  <option value="Courier New">Courier New</option>
+                  <option value="Comic Sans MS">Comic Sans MS</option>
+                  <option value="Segoe UI">Segoe UI</option>
+                  <option value="Tahoma">Tahoma</option>
+                </select>
+              </div>
+              <div>
+                <label>Header Font</label>
+                <select id="headerFont">
+                  <option value="Calibri">Calibri</option>
+                  <option value="Arial">Arial</option>
+                  <option value="Georgia">Georgia</option>
+                  <option value="Times New Roman">Times New Roman</option>
+                  <option value="Verdana">Verdana</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="customize-card">
+              <h3>📏 Font Sizes</h3>
+              <div>
+                <label>Header Size (px)</label>
+                <input type="range" id="headerSize" min="12" max="24" value="14" style="width: 100%;">
+                <span id="headerSizeVal" style="font-size: 11px; color: #666;">14px</span>
+              </div>
+              <div>
+                <label>Body Text Size (px)</label>
+                <input type="range" id="bodySize" min="9" max="14" value="11" style="width: 100%;">
+                <span id="bodySizeVal" style="font-size: 11px; color: #666;">11px</span>
+              </div>
+            </div>
+
+            <div class="customize-card">
+              <h3>📐 Spacing</h3>
+              <div>
+                <label>Line Height</label>
+                <input type="range" id="lineHeight" min="1" max="2.5" step="0.1" value="1.5" style="width: 100%;">
+                <span id="lineHeightVal" style="font-size: 11px; color: #666;">1.5</span>
+              </div>
+              <div>
+                <label>Letter Spacing (px)</label>
+                <input type="range" id="letterSpacing" min="0" max="3" step="0.5" value="0" style="width: 100%;">
+                <span id="letterSpacingVal" style="font-size: 11px; color: #666;">0px</span>
+              </div>
+              <div>
+                <label>Section Margin (px)</label>
+                <input type="range" id="sectionMargin" min="4" max="16" value="8" style="width: 100%;">
+                <span id="sectionMarginVal" style="font-size: 11px; color: #666;">8px</span>
+              </div>
+            </div>
+
+            <div class="customize-card">
+              <h3>✨ Effects</h3>
+              <div>
+                <label><input type="checkbox" id="headerBold" checked> Header Bold</label>
+              </div>
+              <div>
+                <label>Text Alignment</label>
+                <select id="textAlign">
+                  <option value="left">Left</option>
+                  <option value="center">Center</option>
+                  <option value="right">Right</option>
+                  <option value="justify">Justify</option>
+                </select>
+              </div>
+              <div>
+                <label><input type="checkbox" id="showDividers" checked> Show Section Dividers</label>
+              </div>
+            </div>
+
+            <div class="customize-card">
+              <h3>💾 Save & Reset</h3>
+              <button id="resetCustomize" style="width: 100%; padding: 8px; margin-bottom: 8px; border: 1px solid #ddd; background: transparent; cursor: pointer; border-radius: 6px;">Reset to Default</button>
+              <button id="applyCustomize" style="width: 100%; padding: 8px; background: #0066cc; color: white; border: none; cursor: pointer; border-radius: 6px; font-weight: 500;">Apply Changes</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- DASHBOARD TAB -->
+        <div id="dashboard" class="tab-content">
+          <div class="dashboard-header">
+            <h2>Team Resumes</h2>
+            <div style="display: flex; gap: 8px;">
+              <button id="exportAll">Export All</button>
+              <button id="importResumes">Import</button>
+            </div>
+          </div>
+          <div id="resumeList" class="resume-grid"></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.js"></script>
+
+  <script>
+    let currentTemplate = 'professional';
+    let currentResumeName = 'My Resume';
+    let expCount = 0;
+
+    const defaultSummary = `Experienced Registered Nurse with 3+ years of critical care experience in ICU/PCU float, PICU/NICU and MICU settings
+Compassionate and highly skilled in managing high-acuity patients in fast-paced acute care environments
+Proficient in advanced critical care procedures including CRRT, IABP management, and ultrasound guided IV insertion
+Strong background in multidisciplinary collaboration, patient advocacy, and building therapeutic rapport
+Clinical experience includes Medical ICU, Pediatric ICU, Neonatal ICU, Progressive Care Unit, and travel nursing
+Certified in BLS, ACLS, and PALS with prior experience as Nurse Extern, Phlebotomist, and Medical Assistant`;
+
+    const defaultSkills = `Critical Care Nurse, MICU, PICU, NICU, PCU, IABP, CRRT, Ventilator Management, Assessment, Patient Advocacy, Resuscitation`;
+
+    document.getElementById('summary').value = defaultSummary;
+    document.getElementById('skills').value = defaultSkills;
+
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const tab = e.target.dataset.tab;
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        document.getElementById(tab).classList.add('active');
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        e.target.classList.add('active');
+      });
+    });
+
+    document.querySelectorAll('.template-card').forEach(card => {
+      card.addEventListener('click', () => {
+        currentTemplate = card.dataset.template;
+        document.querySelectorAll('.template-card').forEach(c => c.classList.remove('active'));
+        card.classList.add('active');
+        updatePreview();
+      });
+    });
+
+    document.getElementById('addExp').addEventListener('click', addExperienceField);
+    
+    // Customize controls event listeners
+    document.getElementById('lineHeight').addEventListener('input', (e) => {
+      document.getElementById('lineHeightVal').textContent = e.target.value;
+      updatePreview();
+    });
+    document.getElementById('headerSize').addEventListener('input', (e) => {
+      document.getElementById('headerSizeVal').textContent = e.target.value + 'px';
+      updatePreview();
+    });
+    document.getElementById('bodySize').addEventListener('input', (e) => {
+      document.getElementById('bodySizeVal').textContent = e.target.value + 'px';
+      updatePreview();
+    });
+    document.getElementById('letterSpacing').addEventListener('input', (e) => {
+      document.getElementById('letterSpacingVal').textContent = e.target.value + 'px';
+      updatePreview();
+    });
+    document.getElementById('sectionMargin').addEventListener('input', (e) => {
+      document.getElementById('sectionMarginVal').textContent = e.target.value + 'px';
+      updatePreview();
+    });
+    document.getElementById('colorPrimary').addEventListener('input', updatePreview);
+    document.getElementById('colorAccent').addEventListener('input', updatePreview);
+    document.getElementById('colorBackground').addEventListener('input', updatePreview);
+    document.getElementById('colorSecondary').addEventListener('input', updatePreview);
+    document.getElementById('fontFamily').addEventListener('input', updatePreview);
+    document.getElementById('headerFont').addEventListener('input', updatePreview);
+    document.getElementById('headerBold').addEventListener('input', updatePreview);
+    document.getElementById('textAlign').addEventListener('input', updatePreview);
+    document.getElementById('showDividers').addEventListener('input', updatePreview);
+    
+    // Template save button
+    document.getElementById('saveTemplate').addEventListener('click', () => {
+      alert(`✓ Template "${currentTemplate}" selected and saved!`);
+      updatePreview();
+    });
+    
+    // Reset customize button
+    document.getElementById('resetCustomize').addEventListener('click', () => {
+      document.getElementById('colorPrimary').value = '#1a1a1a';
+      document.getElementById('colorAccent').value = '#0066cc';
+      document.getElementById('colorBackground').value = '#ffffff';
+      document.getElementById('colorSecondary').value = '#666666';
+      document.getElementById('fontFamily').value = 'Calibri';
+      document.getElementById('headerFont').value = 'Calibri';
+      document.getElementById('headerSize').value = 14;
+      document.getElementById('bodySize').value = 11;
+      document.getElementById('lineHeight').value = 1.5;
+      document.getElementById('letterSpacing').value = 0;
+      document.getElementById('sectionMargin').value = 8;
+      document.getElementById('headerBold').checked = true;
+      document.getElementById('textAlign').value = 'left';
+      document.getElementById('showDividers').checked = true;
+      document.getElementById('headerSizeVal').textContent = '14px';
+      document.getElementById('bodySizeVal').textContent = '11px';
+      document.getElementById('lineHeightVal').textContent = '1.5';
+      document.getElementById('letterSpacingVal').textContent = '0px';
+      document.getElementById('sectionMarginVal').textContent = '8px';
+      updatePreview();
+      alert('✓ Customization reset to default!');
+    });
+
+    function addExperienceField() {
+      const container = document.getElementById('experienceContainer');
+      const id = expCount++;
+      const expDiv = document.createElement('div');
+      expDiv.id = `exp-${id}`;
+      expDiv.className = 'exp-field';
+      expDiv.innerHTML = `
+        <input type="text" class="expTitle" placeholder="Job Title" value="">
+        <input type="text" class="expCompany" placeholder="Company">
+        <input type="text" class="expLocation" placeholder="Location">
+        <input type="text" class="expDates" placeholder="Dates">
+        <textarea class="expBullets" placeholder="Bullets (one per line)" rows="4"></textarea>
+        <button type="button" class="removeExp" style="width: 100%;">Remove</button>
+      `;
+      container.appendChild(expDiv);
+      expDiv.querySelector('.removeExp').addEventListener('click', () => { expDiv.remove(); updatePreview(); });
+      Array.from(expDiv.querySelectorAll('input, textarea')).forEach(el => el.addEventListener('input', updatePreview));
+      updatePreview();
+    }
+
+    function getTemplateStyles() {
+      const styles = {
+        professional: { fontSize: '11px', headerSize: '14px', lineHeight: '1.5', marginSection: '8px' },
+        modern: { fontSize: '11px', headerSize: '15px', lineHeight: '1.6', marginSection: '10px' },
+        minimalist: { fontSize: '10px', headerSize: '13px', lineHeight: '1.4', marginSection: '6px' },
+        creative: { fontSize: '12px', headerSize: '16px', lineHeight: '1.7', marginSection: '12px' },
+        'software-engineer': { fontSize: '11px', headerSize: '14px', lineHeight: '1.5', marginSection: '8px' },
+        'devops': { fontSize: '11px', headerSize: '14px', lineHeight: '1.5', marginSection: '8px' },
+        'data-scientist': { fontSize: '11px', headerSize: '14px', lineHeight: '1.5', marginSection: '8px' },
+        'fullstack': { fontSize: '11px', headerSize: '14px', lineHeight: '1.5', marginSection: '8px' }
+      };
+      return styles[currentTemplate];
+    }
+
+    // Auto-parse resume on input
+    document.getElementById('resumeImport').addEventListener('input', debounce(parseResume, 500));
+    document.getElementById('resumeFile').addEventListener('change', handleFileUpload);
+
+    function debounce(func, wait) {
+      let timeout;
+      return function(...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func(...args), wait);
+      };
+    }
+
+    function handleFileUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        document.getElementById('resumeImport').value = evt.target.result;
+        parseResume();
+      };
+      
+      if (file.name.endsWith('.txt')) {
+        reader.readAsText(file);
+      } else {
+        alert('For PDF/DOC files, please copy-paste the text content into the textarea above');
+      }
+    }
+
+    function parseResume() {
+      const text = document.getElementById('resumeImport').value.trim();
+      if (!text) return;
+
+      // Extract Name - look for capitalized words at start
+      const nameMatch = text.match(/^([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)/m);
+      if (nameMatch) document.getElementById('fullName').value = nameMatch[1].trim();
+
+      // Extract Phone - various formats
+      const phoneMatch = text.match(/\+?1?\s*\(?(\d{3})\)?[-.\s]?(\d{3})[-.\s]?(\d{4})/);
+      if (phoneMatch) document.getElementById('phone').value = `(${phoneMatch[1]}) ${phoneMatch[2]}-${phoneMatch[3]}`;
+
+      // Extract Email
+      const emailMatch = text.match(/([a-zA-Z0-9._%-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/);
+      if (emailMatch) document.getElementById('email').value = emailMatch[1];
+
+      // Extract Location - city, state pattern
+      const locationMatch = text.match(/\b([A-Z][a-z]+),?\s+([A-Z]{2})\b/);
+      if (locationMatch) document.getElementById('location').value = `${locationMatch[1]}, ${locationMatch[2]}`;
+
+      // Extract Summary/Professional Summary
+      const summarySection = text.match(/(?:professional\s+summary|summary|overview|objective)[:\s]*\n([\s\S]*?)(?=\n\n|\nEducation|\nSkills|\nExperience|\n[A-Z][A-Z]|\n\n[A-Z])/i);
+      if (summarySection) {
+        const summary = summarySection[1]
+          .split('\n')
+          .map(line => line.replace(/^[-•*]\s*/, '').trim())
+          .filter(line => line.length > 10)
+          .join('\n');
+        document.getElementById('summary').value = summary;
+      }
+
+      // Extract Skills
+      const skillsSection = text.match(/(?:skills?|technical\s+skills|core\s+competencies)[:\s]*\n([\s\S]*?)(?=\n\n|\nEducation|\nExperience|\nProjects|\n[A-Z][A-Z]|\n\n[A-Z])/i);
+      if (skillsSection) {
+        const skills = skillsSection[1]
+          .split(/[,\n]/)
+          .map(s => s.replace(/^[-•*]\s*/, '').trim())
+          .filter(s => s.length > 2)
+          .join(', ');
+        document.getElementById('skills').value = skills;
+      }
+
+      // Extract Education
+      const eduSection = text.match(/(?:education|academic)[:\s]*\n([\s\S]*?)(?=\n\n|\nExperience|\nSkills|\n[A-Z][A-Z]|\n\n[A-Z])/i);
+      if (eduSection) {
+        const eduLines = eduSection[1]
+          .split('\n')
+          .map(l => l.trim())
+          .filter(l => l.length > 0);
+        
+        if (eduLines[0]) document.getElementById('degree').value = eduLines[0];
+        if (eduLines[1]) document.getElementById('school').value = eduLines[1];
+        if (eduLines[2]) document.getElementById('gradDate').value = eduLines[2];
+      }
+
+      // Extract Experience - parse first few positions
+      const expSection = text.match(/(?:professional\s+)?experience[:\s]*\n([\s\S]*?)(?=\n[A-Z][A-Z]|\nEducation|\nSkills|\n$)/i);
+      if (expSection) {
+        const expText = expSection[1];
+        const positions = expText.split(/\n(?=[A-Z][a-z]+\s+(?:at|@|-|–|—)|(?:20|19)\d{2})/);
+        
+        document.getElementById('experienceContainer').innerHTML = '';
+        expCount = 0;
+        
+        positions.slice(0, 3).forEach(pos => {
+          if (pos.trim().length > 10) {
+            const titleMatch = pos.match(/^([^,\n]+?)(?:\s+(?:at|@|-|–|—)\s+)?/);
+            const companyMatch = pos.match(/(?:at|@|-|–|—)\s+([^,\n]+)/);
+            const datesMatch = pos.match(/(\w+\s+20\d{2}\s*(?:-|–|to)\s*(?:\w+\s+)?20\d{2}|\w+\s+20\d{2}\s*-\s*Present)/i);
+            const bulletsMatch = pos.match(/(?:[-•*]\s+.+)/g);
+
+            if (titleMatch) {
+              const id = expCount++;
+              const div = document.createElement('div');
+              div.className = 'exp-field';
+              div.innerHTML = `
+                <input type="text" class="expTitle" placeholder="Job Title" value="${(titleMatch[1] || '').trim()}">
+                <input type="text" class="expCompany" placeholder="Company" value="${(companyMatch ? companyMatch[1] : '').trim()}">
+                <input type="text" class="expLocation" placeholder="Location" value="">
+                <input type="text" class="expDates" placeholder="Dates" value="${(datesMatch ? datesMatch[0] : '').trim()}">
+                <textarea class="expBullets" placeholder="Bullets (one per line)" rows="4">${
+                  bulletsMatch ? bulletsMatch.map(b => b.replace(/^[-•*]\s*/, '').trim()).join('\n') : ''
+                }</textarea>
+                <button type="button" class="removeExp" style="width: 100%;">Remove</button>
+              `;
+              document.getElementById('experienceContainer').appendChild(div);
+              div.querySelector('.removeExp').addEventListener('click', () => { div.remove(); updatePreview(); });
+              Array.from(div.querySelectorAll('input, textarea')).forEach(el => el.addEventListener('input', updatePreview));
+            }
+          }
+        });
+      }
+
+      updatePreview();
+    }
+
+    function updatePreview() {
+      const fullName = document.getElementById('fullName').value;
+      const phone = document.getElementById('phone').value;
+      const email = document.getElementById('email').value;
+      const location = document.getElementById('location').value;
+      const summary = document.getElementById('summary').value;
+      const degree = document.getElementById('degree').value;
+      const school = document.getElementById('school').value;
+      const gradDate = document.getElementById('gradDate').value;
+      const skillsText = document.getElementById('skills').value;
+      
+      // Customize values
+      const lineHeight = document.getElementById('lineHeight').value;
+      const fontFamily = document.getElementById('fontFamily').value;
+      const headerFont = document.getElementById('headerFont').value;
+      const colorPrimary = document.getElementById('colorPrimary').value;
+      const colorAccent = document.getElementById('colorAccent').value;
+      const colorSecondary = document.getElementById('colorSecondary').value;
+      const headerSize = document.getElementById('headerSize').value;
+      const bodySize = document.getElementById('bodySize').value;
+      const letterSpacing = document.getElementById('letterSpacing').value;
+      const sectionMargin = document.getElementById('sectionMargin').value;
+      const headerBold = document.getElementById('headerBold').checked;
+      const textAlign = document.getElementById('textAlign').value;
+      const showDividers = document.getElementById('showDividers').checked;
+      
+      const style = getTemplateStyles();
+      const skills = skillsText.split(/[,\n]/).filter(s => s.trim()).map(s => s.trim());
+      const summaryBullets = summary.split('\n').filter(s => s.trim()).map(s => s.trim());
+
+      let html = `<div style="font-family: ${fontFamily}; font-size: ${bodySize}px; line-height: ${lineHeight}; color: ${colorPrimary}; text-align: ${textAlign}; letter-spacing: ${letterSpacing}px;">`;
+      
+      html += `<div style="margin-bottom: ${sectionMargin}px;"><strong style="font-family: ${headerFont}; font-size: ${headerSize}px; color: ${colorAccent}; font-weight: ${headerBold ? 'bold' : 'normal'};">${fullName}</strong></div>`;
+      html += `<div style="margin-bottom: ${sectionMargin}px; font-size: ${bodySize - 1}px; color: ${colorSecondary};">${location} • ${email} • ${phone}</div>`;
+      if (showDividers) html += `<hr style="border: none; border-top: 1px solid ${colorAccent}; margin: ${sectionMargin}px 0;" />`;
+      
+      html += `<div style="margin-bottom: 4px; font-weight: ${headerBold ? 'bold' : 'normal'};"><strong style="font-family: ${headerFont}; font-size: ${headerSize}px; color: ${colorAccent};">Professional Summary:</strong></div>`;
+      summaryBullets.forEach(bullet => {
+        html += `<div style="margin-left: 12px; margin-bottom: 2px; color: ${colorPrimary};">• ${bullet}</div>`;
+      });
+      if (showDividers) html += `<hr style="border: none; border-top: 1px solid ${colorAccent}; margin: ${sectionMargin}px 0;" />`;
+      
+      html += `<div style="margin-bottom: 4px;"><strong style="font-family: ${headerFont}; font-size: ${headerSize}px; color: ${colorAccent}; font-weight: ${headerBold ? 'bold' : 'normal'};">Education:</strong></div>`;
+      html += `<div style="margin-left: 12px; color: ${colorPrimary};"><strong>${degree}</strong></div>`;
+      html += `<div style="margin-left: 12px; color: ${colorSecondary};">${school} • ${gradDate}</div>`;
+      if (showDividers) html += `<hr style="border: none; border-top: 1px solid ${colorAccent}; margin: ${sectionMargin}px 0;" />`;
+      
+      html += `<div style="margin-bottom: 4px;"><strong style="font-family: ${headerFont}; font-size: ${headerSize}px; color: ${colorAccent}; font-weight: ${headerBold ? 'bold' : 'normal'};">Skills:</strong></div>`;
+      skills.forEach(skill => {
+        html += `<div style="margin-left: 12px; margin-bottom: 2px; color: ${colorPrimary};">• ${skill}</div>`;
+      });
+      if (showDividers) html += `<hr style="border: none; border-top: 1px solid ${colorAccent}; margin: ${sectionMargin}px 0;" />`;
+      
+      html += `<div style="margin-bottom: 4px;"><strong style="font-family: ${headerFont}; font-size: ${headerSize}px; color: ${colorAccent}; font-weight: ${headerBold ? 'bold' : 'normal'};">Professional Experience:</strong></div>`;
+      document.querySelectorAll('#experienceContainer > div').forEach(field => {
+        const title = field.querySelector('.expTitle').value;
+        const company = field.querySelector('.expCompany').value;
+        const expLocation = field.querySelector('.expLocation').value;
+        const dates = field.querySelector('.expDates').value;
+        const bullets = field.querySelector('.expBullets').value.split('\n').filter(b => b.trim());
+
+        if (title) {
+          html += `<div style="margin-left: 12px; margin-top: 4px; color: ${colorPrimary};"><strong style="font-weight: ${headerBold ? 'bold' : 'normal'};">${title}</strong> • ${company}</div>`;
+          html += `<div style="margin-left: 12px; font-size: ${bodySize - 1}px; color: ${colorSecondary};">${expLocation} • ${dates}</div>`;
+          bullets.forEach(bullet => {
+            html += `<div style="margin-left: 12px; margin-bottom: 2px; color: ${colorPrimary};">• ${bullet}</div>`;
+          });
+        }
+      });
+      
+      html += `</div>`;
+      document.getElementById('preview').innerHTML = html;
+    }
+
+    document.querySelectorAll('input, textarea, select').forEach(el => {
+      el.addEventListener('input', updatePreview);
+    });
+
+    document.getElementById('exportPDF').addEventListener('click', () => {
+      const element = document.getElementById('preview');
+      const opt = { margin: 10, filename: currentResumeName + '.pdf', image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' } };
+      html2pdf().set(opt).from(element).save();
+    });
+
+    document.getElementById('exportDOCX').addEventListener('click', async () => {
+      const { Document, Packer, Paragraph } = docx;
+      
+      const fullName = document.getElementById('fullName').value;
+      const email = document.getElementById('email').value;
+      const phone = document.getElementById('phone').value;
+      const location = document.getElementById('location').value;
+      
+      const doc = new Document({
+        sections: [{
+          children: [
+            new Paragraph({ text: fullName, bold: true, size: 28 }),
+            new Paragraph({ text: `${location} • ${email} • ${phone}`, size: 22 }),
+            new Paragraph({ text: '', size: 22 }),
+            ...document.getElementById('summary').value.split('\n').filter(l => l.trim()).map(l => 
+              new Paragraph({ text: '• ' + l.trim(), size: 22 })
+            ),
+            new Paragraph({ text: '', size: 22 }),
+            new Paragraph({ text: 'Education', bold: true, size: 24 }),
+            new Paragraph({ text: document.getElementById('degree').value, bold: true, size: 22 }),
+            new Paragraph({ text: document.getElementById('school').value + ' • ' + document.getElementById('gradDate').value, size: 22 }),
+          ]
+        }]
+      });
+      
+      Packer.toBlob(doc).then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = currentResumeName + '.docx';
+        a.click();
+      });
+    });
+
+    document.getElementById('saveResume').addEventListener('click', () => {
+      const name = prompt('Resume name:', currentResumeName);
+      if (name) {
+        currentResumeName = name;
+        const data = {
+          fullName: document.getElementById('fullName').value,
+          email: document.getElementById('email').value,
+          phone: document.getElementById('phone').value,
+          location: document.getElementById('location').value,
+          summary: document.getElementById('summary').value,
+          degree: document.getElementById('degree').value,
+          school: document.getElementById('school').value,
+          gradDate: document.getElementById('gradDate').value,
+          skills: document.getElementById('skills').value,
+          experiences: Array.from(document.querySelectorAll('#experienceContainer > div')).map(f => ({
+            title: f.querySelector('.expTitle').value,
+            company: f.querySelector('.expCompany').value,
+            location: f.querySelector('.expLocation').value,
+            dates: f.querySelector('.expDates').value,
+            bullets: f.querySelector('.expBullets').value
+          }))
+        };
+        let resumes = JSON.parse(localStorage.getItem('resumes') || '{}');
+        resumes[name] = data;
+        localStorage.setItem('resumes', JSON.stringify(resumes));
+        alert('Resume saved!');
+        updateDashboard();
+      }
+    });
+
+    function updateDashboard() {
+      const resumes = JSON.parse(localStorage.getItem('resumes') || '{}');
+      const list = document.getElementById('resumeList');
+      list.innerHTML = '';
+      Object.keys(resumes).forEach(name => {
+        const card = document.createElement('div');
+        card.className = 'resume-card';
+        card.innerHTML = `<h3>${name}</h3><div class="actions"><button class="loadResume">Load</button><button class="delResume">Delete</button></div>`;
+        card.querySelector('.loadResume').addEventListener('click', () => {
+          const res = resumes[name];
+          document.getElementById('fullName').value = res.fullName;
+          document.getElementById('email').value = res.email;
+          document.getElementById('phone').value = res.phone;
+          document.getElementById('location').value = res.location;
+          document.getElementById('summary').value = res.summary;
+          document.getElementById('degree').value = res.degree;
+          document.getElementById('school').value = res.school;
+          document.getElementById('gradDate').value = res.gradDate;
+          document.getElementById('skills').value = res.skills;
+          currentResumeName = name;
+          document.getElementById('experienceContainer').innerHTML = '';
+          expCount = 0;
+          res.experiences.forEach(exp => {
+            if (exp.title) {
+              const id = expCount++;
+              const div = document.createElement('div');
+              div.className = 'exp-field';
+              div.innerHTML = `<input type="text" class="expTitle" placeholder="Job Title" value="${exp.title}"><input type="text" class="expCompany" placeholder="Company" value="${exp.company}"><input type="text" class="expLocation" placeholder="Location" value="${exp.location}"><input type="text" class="expDates" placeholder="Dates" value="${exp.dates}"><textarea class="expBullets" placeholder="Bullets (one per line)" rows="4">${exp.bullets}</textarea><button type="button" class="removeExp" style="width: 100%;">Remove</button>`;
+              document.getElementById('experienceContainer').appendChild(div);
+              div.querySelector('.removeExp').addEventListener('click', () => { div.remove(); updatePreview(); });
+              Array.from(div.querySelectorAll('input, textarea')).forEach(el => el.addEventListener('input', updatePreview));
+            }
+          });
+          updatePreview();
+          document.querySelector('[data-tab="builder"]').click();
+        });
+        card.querySelector('.delResume').addEventListener('click', () => {
+          delete resumes[name];
+          localStorage.setItem('resumes', JSON.stringify(resumes));
+          updateDashboard();
+        });
+        list.appendChild(card);
+      });
+    }
+
+    document.getElementById('exportAll').addEventListener('click', () => {
+      const resumes = JSON.parse(localStorage.getItem('resumes') || '{}');
+      const dataStr = JSON.stringify(resumes, null, 2);
+      const blob = new Blob([dataStr], { type: 'application/json' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'team-resumes.json';
+      a.click();
+    });
+
+    document.getElementById('importResumes').addEventListener('click', () => {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.json';
+      input.onchange = (e) => {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          const imported = JSON.parse(evt.target.result);
+          let resumes = JSON.parse(localStorage.getItem('resumes') || '{}');
+          resumes = { ...resumes, ...imported };
+          localStorage.setItem('resumes', JSON.stringify(resumes));
+          updateDashboard();
+          alert('Resumes imported!');
+        };
+        reader.readAsText(file);
+      };
+      input.click();
+    });
+
+    updatePreview();
+    updateDashboard();
+  </script>
+</body>
+</html>
